@@ -1,0 +1,15 @@
+[target.wasm32-wasip2] # Or your specific target
+# Force the Wasm max memory to exactly match your reserved_bytes (e.g., 10MB = 10485760 bytes)
+rustflags = [
+    # 131,072 frames * 2048 bytes = 268,435,456 bytes (Exactly 4,096 Wasm Pages)
+    "-C", "link-arg=--initial-memory=268435456",
+    "-C", "link-arg=--max-memory=268435456",
+    #"-C", "link-arg=--initial-memory=67108864",
+    #"-C", "link-arg=--max-memory=67108864",
+    # Optional but highly recommended for AF_XDP:
+    # Force the allocator to panic immediately on OOM instead of unwinding
+    "-C", "link-arg=-zstack-size=50331648", # 48 MiB — ConnectionPool::new() needs ~24 MiB on the shadow stack (SRET)
+    # Optional: Tell the linker to export the stack pointer so you can monitor it!
+    "-C", "link-arg=--export=__global_base",
+    "-C", "link-arg=--export=__heap_base",
+]

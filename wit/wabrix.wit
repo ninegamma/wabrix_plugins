@@ -1,0 +1,141 @@
+package wabrix:plugins@0.2.0;
+    
+/// The interface for nodes that inspect and modify packets, e.g. running a TCP stack.
+interface packet-engine {
+    /// A cumulative histogram metric reported by a packet-engine plugin.
+    record histogram {
+        name: string,
+        sum: u64,
+        count: u64,
+        buckets: list<u64>,
+    }
+
+    record counter {
+        name: string,
+        value: u64,
+    }
+
+    /// Declares the stable counter names emitted by a plugin instance.
+    record histogram-schema {
+        name: string,
+        bucket-count: u32,
+    }
+
+    /// Declares the telemetry storage required by a plugin instance.
+    record telemetry-schema {
+        counters: list<string>,
+        histograms: list<histogram-schema>,
+    }
+
+    /// A telemetry payload can contain ordinary counters and structured metrics.
+    variant telemetry-metric {
+        counter(counter),
+        hist(histogram),
+    }
+
+    /// Exact timer workload requested for the next batch.
+    record timer-plan {
+        timeout-frames: u32,
+        packet-frames: u32,
+    }
+
+    /// Called once at startup with admin key/value data from the node config (node_data field)
+    init-data: func(data: list<tuple<string, string>>, tsc-frequency: u64) -> bool;
+
+    /// Upgrade the shared payload after the runner has stopped the old runtime.
+    /// The plugin may initialize appended fields only; the host commits the new
+    /// schema version and size after this call succeeds.
+    upgrade-shared-state: func(
+        source-schema-version: u32,
+        source-payload-size: u32
+    ) -> result<_, string>;
+
+    /// Zero-copy batch processing via the shared UMEM mailbox.
+    /// The host writes desc_addrs/lengths into the mailbox before calling; the plugin
+    /// writes actions/new_lengths into the same mailbox and returns a status code (0 = OK).
+    process-batch: func(batch-size: u32, umem-offset: u32, mailbox-offset: u32) -> u32;
+
+    /// Process timers and return the timeout/SYN frame split for the next batch.
+    process-timers: func(current-tsc: u64) -> timer-plan;
+
+    // The universal control event receiver
+    on-control-event: func(opcode: u32, payload: list<u8>) -> bool;
+
+    /// Describes the stable telemetry schema for this initialized instance.
+    /// Counter names and histogram definitions must match get-telemetry output.
+    get-telemetry-schema: func() -> telemetry-schema;
+
+    /// Returns out-of-band telemetry. Counter entries retain their configured
+    /// order; structured metrics may appear alongside them. An empty list
+    /// means that no telemetry snapshot is available for this poll.
+    get-telemetry: func() -> list<telemetry-metric>;
+}
+
+interface logging {
+    log: func(level: u32, message: string);
+}
+
+/// Host access to the fixed-layout state region shared by active and staged
+/// instances of one reloadable plugin node.
+interface shared-state {
+    /// The plugin's fixed state layout and schema compatibility declaration.
+    record state-layout {
+        /// Exactly 16 bytes identifying this state type across plugin releases.
+        type-id: list<u8>,
+        schema-version: u32,
+        payload-size: u32,
+        reserved-capacity: u32,
+        required-alignment: u32,
+        /// Older payload schema versions this plugin knows how to extend.
+        compatible-source-versions: list<u32>,
+    }
+
+    /// A validated guest-linear view of the shared payload.
+    record state-view {
+        payload-offset: u32,
+        payload-capacity: u32,
+        current-schema-version: u32,
+        current-payload-size: u32,
+        is-new: bool,
+        upgrade-required: bool,
+    }
+
+    /// Validate the plugin layout and obtain its payload offset. A fresh region
+    /// gets a host-written header; an append-compatible older schema is
+    /// reported so the runner can call upgrade-shared-state at the switchover
+    /// checkpoint, after the old runtime is quiescent.
+    attach: func(layout: state-layout) -> result<state-view, string>;
+}
+
+/// The interface for nodes that generate new synthetic traffic.
+interface generator {
+    /// Called once at startup with admin key/value data from the node config (node_data field)
+    /// and to set the worker ID and internal sequence state
+    init-data: func(data: list<tuple<string, string>>, worker-id: u32);
+
+    /// Serialize plugin-owned runtime state for transfer to a replacement instance.
+    save-state: func() -> result<list<u8>, string>;
+
+    /// Restore a snapshot produced by a compatible version of this plugin.
+    restore-state: func(state: list<u8>) -> result<_, string>;
+
+    // Define aliases for readability
+    type ipv4-addr = tuple<u8, u8, u8, u8>;
+    type mac-addr = tuple<u8, u8, u8, u8, u8, u8>;
+    set-dst: func(mac: mac-addr, ip: ipv4-addr);
+
+    /// Takes an empty batch of PDUs, writes headers, returns packet lengths
+    generate-batch: func(batch-bytes: list<u8>, umem-offset: u32) -> list<u32>;
+}
+
+/// The World definition for a Generator plugin
+world generator-plugin {
+    export generator;
+}
+
+/// The World definition for a generic WASM engine plugin
+world engine-plugin {
+    export packet-engine;
+    import logging;
+    import shared-state;
+}

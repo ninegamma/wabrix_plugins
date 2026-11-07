@@ -1,0 +1,20 @@
+[package]
+name = "inspector_engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+# This is crucial for Wasm components
+crate-type = ["cdylib"]
+
+[dependencies]
+# Pull this from your workspace.dependencies
+wit-bindgen = { workspace = true }
+wabrix_api = { workspace = true }
+network-types = { workspace = true }
+macaddr = { workspace = true }
+spin = { workspace = true }
+log = { version = "0.4", default-features = false }
+postcard = "1.1.3"
+serde = { workspace = true }

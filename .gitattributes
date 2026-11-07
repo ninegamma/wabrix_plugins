@@ -1,0 +1,2 @@
+# Preserve the upstream WIT snapshot byte-for-byte; source.lock.json verifies it.
+wit/wabrix.wit -whitespace

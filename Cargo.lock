@@ -111,7 +111,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
 name = "filter_engine"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "log",
  "postcard",
@@ -133,7 +133,7 @@ checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
 name = "generator_engine"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "log",
  "network-types",
@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "generator_plugin"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "network-types",
  "spin 0.10.0",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "inspector_engine"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "log",
  "postcard",
@@ -467,7 +467,7 @@ dependencies = [
 
 [[package]]
 name = "tcp_engine"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "log",
  "postcard",
@@ -510,7 +510,8 @@ checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
 name = "wabrix_api"
-version = "0.6.1"
+version = "0.7.0"
+source = "git+https://github.com/ninegamma/wabrix_api.git?branch=main#6fd02f39c5eea4e38f027065abf530415c254836"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -523,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "wabrix_plugins"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "hashbrown 0.17.1",
  "log",

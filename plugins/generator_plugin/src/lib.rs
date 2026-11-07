@@ -165,7 +165,7 @@ impl Guest for MyGenerator {
                 tcp.seq = seq.to_be_bytes();
 
                 // 5. Serialize directly into Wasm memory
-                let len = packet.write_mac_ipv4_tcp_headers(&mac, &ip, &tcp);
+                let len = packet.write_eth_ipv4_tcp_headers(&mac, &ip, &tcp);
 
                 seq = seq.wrapping_add(1);
                 len

@@ -246,7 +246,7 @@ impl UdpPacketTemplate {
     fn write(&self, packet: &mut MailboxPacket<'_>, src_port: u16, sequence: u64) {
         let udp = self.udp_header_for_packet(src_port, sequence);
         let packet = packet.as_packet();
-        let header_len = packet.write_mac_ipv4_udp_headers(&self.mac, &self.ip, &udp);
+        let header_len = packet.write_eth_ipv4_udp_headers(&self.mac, &self.ip, &udp);
         let sequence_bytes = sequence.to_be_bytes();
         // The UMEM frame is exclusively owned and has room for the fixed
         // timestamp and sequence payload.

@@ -14,7 +14,6 @@ use wabrix_api::headers::check::ipv4_checksum;
 use wabrix_api::headers::{
     new_ipv4_header, update_ipv4_checksum,
 };
-use wabrix_api::helpers::update_tcp_checksum;
 use wabrix_api::packet::Packet;
 use zerocopy::IntoBytes;
 
@@ -55,6 +54,21 @@ pub const STAT_DROP: usize = 21;
 pub const STAT_COUNT: usize = 22;
 pub const TCP_WATERMARK_INDEX: usize = STAT_COUNT;
 pub const TCP_TELEMETRY_LEN: usize = STAT_COUNT + 1;
+
+/// Recomputes the TCP checksum for an IPv4 packet segment.
+#[inline]
+pub fn update_tcp_checksum(tcp_segment: &mut [u8], ip_src: u32, ip_dst: u32) {
+    let checksum = ipv4_checksum(
+        tcp_segment.as_mut_ptr(),
+        tcp_segment.len(),
+        8,
+        &[],
+        ip_src,
+        ip_dst,
+        6,
+    );
+    tcp_segment[16..18].copy_from_slice(&checksum.to_be_bytes());
+}
 
 /// Stable route meanings used by native and Wasm TCP engines.
 pub const TCP_ROUTE_TX: u32 = 0;
@@ -402,7 +416,7 @@ pub fn write_tcp_packet(
     tcp.window = 64240u16.to_be_bytes();
     update_tcp_checksum(tcp.as_mut_bytes(), src_ip, dst_ip);
 
-    packet.write_mac_ipv4_tcp_headers(&mac, &ip, &tcp)
+    packet.write_eth_ipv4_tcp_headers(&mac, &ip, &tcp)
 }
 
 /// Formats an Ethernet/IPv4/UDP packet with the supplied payload.
@@ -447,7 +461,7 @@ pub fn write_udp_packet(
     udp.set_dst_port(dst_port);
     udp.set_len(udp_len);
 
-    let header_len = packet.write_mac_ipv4_udp_headers(&mac, &ip, &udp);
+    let header_len = packet.write_eth_ipv4_udp_headers(&mac, &ip, &udp);
     let udp_ptr = unsafe { packet.data_ptr_mut().add(mac_size + ip_size) };
     let payload_ptr = unsafe { packet.data_ptr_mut().add(header_len as usize) };
 
@@ -621,3 +635,86 @@ pub fn run_tcp_state_machine(
 
     None
 }
+
+//use log::trace;
+//use zerocopy::FromBytes;
+//use network_types::ip::Ipv4Hdr;
+//use network_types::tcp::TcpHdr;
+
+/*
+#[inline]
+pub fn prepare_checksums_and_ttl(p: &mut PduCore, base_addr: usize) {
+    let frame_size = p.frame_size();
+    let packet_len = p.data_len() as usize;
+    let headroom = p.headroom();
+    let stack = p.headers_mut();
+    let Some(ip_index) = (0..stack.count()).find(|&i| stack.kinds[i] == HeaderKind::Ip) else {
+        return;
+    };
+    let frame_offset = stack.offsets[ip_index] as usize;
+    let Some(packet_offset) = frame_offset.checked_sub(headroom) else {
+        return;
+    };
+    let Some(packet_end) = packet_offset.checked_add(Ipv4Hdr::LEN) else {
+        return;
+    };
+    let Some(frame_end) = frame_offset.checked_add(Ipv4Hdr::LEN) else {
+        return;
+    };
+    if packet_end > packet_len || frame_end > frame_size {
+        return;
+    }
+
+    let (psz, src, dst) = {
+        let ip_ptr = (base_addr + frame_offset) as *mut u8;
+        // SAFETY: The stack offset and packet/frame bounds above ensure the IPv4 header is in
+        // the frame. The caller owns this packet mutably for the duration of this function.
+        let ip_bytes = unsafe { core::slice::from_raw_parts_mut(ip_ptr, Ipv4Hdr::LEN) };
+        let Ok(ip) = Ipv4Hdr::mut_from_bytes(ip_bytes) else {
+            return;
+        };
+        let ttl = ip.ttl;
+        if ttl >= 1 {
+            ip.ttl = ttl - 1;
+        }
+        update_ipv4_checksum(ip);
+        (
+            ip.payload_size(0),
+            u32::from(ip.src_addr()),
+            u32::from(ip.dst_addr()),
+        )
+    };
+    let Some(tcp_index) = (0..stack.count()).find(|&i| stack.kinds[i] == HeaderKind::Tcp) else {
+        return;
+    };
+    if psz < TcpHdr::LEN {
+        return;
+    }
+    let tcp_frame_offset = stack.offsets[tcp_index] as usize;
+    let Some(tcp_packet_offset) = tcp_frame_offset.checked_sub(headroom) else {
+        return;
+    };
+    let Some(tcp_packet_end) = tcp_packet_offset.checked_add(psz) else {
+        return;
+    };
+    let Some(tcp_frame_end) = tcp_frame_offset.checked_add(psz) else {
+        return;
+    };
+    if tcp_packet_end > packet_len || tcp_frame_end > frame_size {
+        return;
+    }
+
+    let checksum = {
+        let tcp_ptr = (base_addr + tcp_frame_offset) as *mut u8;
+        // SAFETY: The stack offset and packet/frame bounds above cover the entire TCP segment.
+        let tcp_bytes = unsafe { core::slice::from_raw_parts_mut(tcp_ptr, psz) };
+        update_tcp_checksum(tcp_bytes, src, dst);
+        u16::from_be_bytes([tcp_bytes[16], tcp_bytes[17]])
+    };
+    trace!(
+        "ip-payload_sz= {}, checksum recalc = {:X}",
+        psz,
+        checksum
+    );
+}
+*/

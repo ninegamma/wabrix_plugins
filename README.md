@@ -29,7 +29,7 @@ wabrix_prj/
 └── wabrix/              # Native host
 ```
 
-The workspace depends on `../wabrix_api/wabrix_api`, with SDK version `0.6.1`.
+The workspace depends on the standalone `../wabrix_api` package, with SDK version `0.6.1`.
 It has its own package versions, lockfile, build configuration, and Git history.
 After publishing the SDK changes, the workspace dependency can instead use the
 SDK Git repository at a compatible release or revision. Native host dependencies

@@ -7,7 +7,6 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::cell::{Cell, RefCell};
 use hashbrown::HashMap;
-
 use wabrix_api::helpers::{parse_ip, parse_mac, parse_suffixed_number};
 use crate::tcp_common::{
     CommonEngineConfig, GeneratorConfig, GeneratorProtocol, PacketGenerator, TcpEngineConfig,

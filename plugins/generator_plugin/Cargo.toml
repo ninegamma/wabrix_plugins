@@ -14,5 +14,4 @@ wit-bindgen = { workspace = true }
 wabrix_api = { workspace = true }
 wabrix_plugins = { workspace = true }
 network-types = { workspace = true }
-macaddr = { workspace = true }
 spin = { workspace = true }

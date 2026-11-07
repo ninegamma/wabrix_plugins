@@ -13,8 +13,5 @@ crate-type = ["cdylib"]
 wit-bindgen = { workspace = true }
 wabrix_api = { workspace = true }
 wabrix_plugins = { workspace = true }
-spin = { workspace = true }
-macaddr = "1.0.1"
-network-types = "0.2.0"
 log = { version = "0.4", default-features = false }
 postcard = "1.1.3"

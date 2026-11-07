@@ -559,6 +559,7 @@ impl Guest for TcpEngine {
         };
 
         #[allow(unreachable_code)]
+
         let opcode = PluginOpcode::from(raw_opcode);
 
         match opcode {

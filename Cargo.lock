@@ -113,7 +113,6 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 name = "filter_engine"
 version = "0.6.1"
 dependencies = [
- "hashbrown 0.17.1",
  "log",
  "postcard",
  "wabrix_api",
@@ -137,10 +136,7 @@ name = "generator_engine"
 version = "0.6.1"
 dependencies = [
  "log",
- "macaddr",
  "network-types",
- "postcard",
- "spin 0.10.0",
  "wabrix_api",
  "wabrix_plugins",
  "wit-bindgen",
@@ -150,7 +146,6 @@ dependencies = [
 name = "generator_plugin"
 version = "0.6.1"
 dependencies = [
- "macaddr",
  "network-types",
  "spin 0.10.0",
  "wabrix_api",
@@ -238,11 +233,7 @@ name = "inspector_engine"
 version = "0.6.1"
 dependencies = [
  "log",
- "macaddr",
- "network-types",
  "postcard",
- "serde",
- "spin 0.10.0",
  "wabrix_api",
  "wit-bindgen",
 ]
@@ -488,10 +479,7 @@ name = "tcp_engine"
 version = "0.6.1"
 dependencies = [
  "log",
- "macaddr",
- "network-types",
  "postcard",
- "spin 0.10.0",
  "wabrix_api",
  "wabrix_plugins",
  "wit-bindgen",

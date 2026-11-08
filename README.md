@@ -21,9 +21,11 @@ wabrix_plugins/
 ## Dependencies and checkout layout
 
 Plugin developers only need to clone this repository. Cargo downloads
-`wabrix_api` at the exact Git revision pinned in `Cargo.toml` and `Cargo.lock`.
-That revision must also match `wit/source.lock.json`; the verification command
-below checks all three and compares the WIT with Cargo's downloaded SDK source.
+`wabrix_api` from `main`, subject to the version requirement in `Cargo.toml`.
+`Cargo.lock` records the selected commit for reproducible builds; use
+`cargo update -p wabrix_api` to advance it. The SDK only needs to be compatible
+with the version recorded in `wit/source.lock.json`, using Cargo's default caret
+rules. For example, snapshot SDK `0.7.0` accepts `0.7.x`, but rejects `0.8.0`.
 
 Maintainers working on the SDK or native host can keep sibling checkouts:
 
@@ -64,11 +66,13 @@ Plugin components are written to `target/wasm32-wasip2/release/`. The repository
 The default workspace members include the library and all five active plugins,
 so `cargo build --release --target wasm32-wasip2` also builds them all.
 
-The WIT check uses `cargo metadata --locked` to verify the resolved SDK commit,
-version, and WIT contents, including dependency overrides. It downloads missing
-dependencies through Cargo and needs no separate SDK checkout. Path overrides
-cannot verify the pinned Git commit and are rejected by this check. See
+The WIT check verifies the snapshot checksum and uses `cargo metadata --locked`
+to check the resolved SDK's version, including dependency overrides. Compatible
+SDK commits, WIT contents, and local path dependencies are allowed. Cargo can
+download missing dependencies; no separate SDK checkout is needed. See
 [wit/README.md](wit/README.md) for offline checks and the interface update workflow.
+For breaking interface changes, follow the
+[SDK, plugins, and host migration sequence](https://github.com/ninegamma/wabrix_api/blob/main/wit_breaking_change.md).
 
 ## Generator plugin deprecation
 
@@ -76,7 +80,7 @@ cannot verify the pinned Git commit and are rejected by this check. See
 will be removed in one of the next versions. Replace it with
 `generator_engine.wasm`, which implements the `engine-plugin` world. Adapt the
 host node configuration and startup parameters to its timer/mailbox interface;
-see the [SDK migration guide](https://github.com/ninegamma/wabrix_api/blob/320f8653b82b41e58129b8ac59621a556f09adb4/wit_doc.md#generator-plugin-deprecation-and-migration).
+see the [SDK migration guide](https://github.com/ninegamma/wabrix_api/blob/main/wit_doc.md#generator-plugin-deprecation-and-migration).
 
 Build the replacement with:
 

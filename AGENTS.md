@@ -28,9 +28,12 @@ opcodes, and `EngineTimerPlan` belong in the sibling `wabrix_api` repository.
   `engine-plugin` world for new generators.
 - Use `wit-bindgen` and the matching WIT world. Never hand-code or silently change
   the ABI. Update canonical WIT in the SDK, commit it there, then run
-  `python3 scripts/sync_wit.py`; pin the workspace SDK dependency to the same
-  revision and update `Cargo.lock`. Commit both snapshot files and both Cargo
-  files together. Publish the SDK commit before others need to fetch it.
+  `python3 scripts/sync_wit.py`. SDK dependencies use Cargo version compatibility,
+  not an exact Git revision: keep the development branch and an appropriate
+  version requirement. The snapshot's SDK version is a caret requirement;
+  breaking WIT/API changes require a breaking SDK version bump. Commit both
+  snapshot files together, plus any changed Cargo files. Local SDK path patches
+  are allowed when their versions are compatible.
 - Never enable the SDK `host` feature in a plugin.
 - Plugin state is initialized in `init-data`. Wasm instances are single-threaded;
   use existing state containers or `spin::Mutex`, never OS threads or `std::net`.

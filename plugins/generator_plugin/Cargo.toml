@@ -1,5 +1,6 @@
 [package]
 name = "generator_plugin"
+description = "Deprecated legacy generator plugin; use generator_engine instead"
 edition.workspace = true
 version.workspace = true
 license.workspace = true

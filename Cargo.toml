@@ -23,7 +23,7 @@ edition = "2021"
 license = "MIT"
 
 [workspace.dependencies]
-wabrix_api = { git = "https://github.com/ninegamma/wabrix_api.git", branch = "main", version= "0.7" }
+wabrix_api = { git = "https://github.com/ninegamma/wabrix_api.git", rev = "320f8653b82b41e58129b8ac59621a556f09adb4", version = "0.7" }
 wabrix_plugins = { path = "." }
 wit-bindgen = "0.54"
 spin = "0.10"

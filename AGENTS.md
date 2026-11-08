@@ -23,9 +23,14 @@ opcodes, and `EngineTimerPlan` belong in the sibling `wabrix_api` repository.
 
 - Rust edition 2021. Keep the shared library and dependencies `no_std` compatible.
 - Compile plugins as `cdylib` for `wasm32-wasip2`.
+- The `generator-plugin` world and `generator_plugin.wasm` are deprecated for
+  removal in an upcoming version. Use `generator_engine.wasm` and the
+  `engine-plugin` world for new generators.
 - Use `wit-bindgen` and the matching WIT world. Never hand-code or silently change
   the ABI. Update canonical WIT in the SDK, commit it there, then run
-  `python3 scripts/sync_wit.py`; commit both snapshot files together.
+  `python3 scripts/sync_wit.py`; pin the workspace SDK dependency to the same
+  revision and update `Cargo.lock`. Commit both snapshot files and both Cargo
+  files together. Publish the SDK commit before others need to fetch it.
 - Never enable the SDK `host` feature in a plugin.
 - Plugin state is initialized in `init-data`. Wasm instances are single-threaded;
   use existing state containers or `spin::Mutex`, never OS threads or `std::net`.
@@ -45,7 +50,7 @@ opcodes, and `EngineTimerPlan` belong in the sibling `wabrix_api` repository.
 ## Verification
 
 ```bash
-python3 scripts/sync_wit.py --check --source ../wabrix_api
+python3 scripts/sync_wit.py --check
 cargo test --workspace --all-features --locked
 cargo clippy -p wabrix_plugins --all-targets --locked
 cargo clippy --workspace --all-features --target wasm32-wasip2 --locked

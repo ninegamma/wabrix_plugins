@@ -10,7 +10,7 @@ wabrix_plugins/
 ├── plugins/
 │   ├── tcp_engine/
 │   ├── generator_engine/
-│   ├── generator_plugin/
+│   ├── generator_plugin/ # Deprecated; use generator_engine
 │   ├── filter_engine/
 │   └── inspector_engine/
 ├── scripts/sync_wit.py
@@ -20,7 +20,12 @@ wabrix_plugins/
 
 ## Dependencies and checkout layout
 
-Keep the SDK and plugin repositories alongside the native host:
+Plugin developers only need to clone this repository. Cargo downloads
+`wabrix_api` at the exact Git revision pinned in `Cargo.toml` and `Cargo.lock`.
+That revision must also match `wit/source.lock.json`; the verification command
+below checks all three and compares the WIT with Cargo's downloaded SDK source.
+
+Maintainers working on the SDK or native host can keep sibling checkouts:
 
 ```text
 wabrix_prj/
@@ -29,10 +34,9 @@ wabrix_prj/
 └── wabrix/              # Native host
 ```
 
-The workspace depends on the standalone `../wabrix_api` package, with SDK version `0.6.1`.
-It has its own package versions, lockfile, build configuration, and Git history.
-After publishing the SDK changes, the workspace dependency can instead use the
-SDK Git repository at a compatible release or revision. Native host dependencies
+This workspace has its own package versions, lockfile, build configuration, and
+Git history. The sibling SDK checkout is optional for plugin development and is
+used by maintainers when updating the canonical WIT. Native host dependencies
 currently use both sibling checkouts to share the same SDK types.
 
 The `wabrix_plugins` library exports `tcp_common`, `connections`, and
@@ -43,11 +47,13 @@ in `wabrix_api`. Filter and inspector plugins depend directly on that SDK.
 
 ## Build and verification
 
-Run these commands from this repository:
+Use Rust/Cargo, Git, Python 3.11 or newer, and a C11 compiler (`cc`, or the
+executable selected by `CC`) for the SDK's ABI checks. Network access is needed
+to download dependencies initially. Run these commands from this repository:
 
 ```bash
 rustup target add wasm32-wasip2
-python3 scripts/sync_wit.py --check --source ../wabrix_api
+python3 scripts/sync_wit.py --check
 cargo test --workspace --all-features --locked
 cargo build --workspace --release --target wasm32-wasip2 --all-features --locked
 cargo clippy --workspace --all-features --target wasm32-wasip2 --locked
@@ -58,8 +64,25 @@ Plugin components are written to `target/wasm32-wasip2/release/`. The repository
 The default workspace members include the library and all five active plugins,
 so `cargo build --release --target wasm32-wasip2` also builds them all.
 
-The WIT snapshot is pinned by upstream Git revision and checksum. See
-[wit/README.md](wit/README.md) for the interface update workflow.
+The WIT check uses `cargo metadata --locked` to verify the resolved SDK commit,
+version, and WIT contents, including dependency overrides. It downloads missing
+dependencies through Cargo and needs no separate SDK checkout. Path overrides
+cannot verify the pinned Git commit and are rejected by this check. See
+[wit/README.md](wit/README.md) for offline checks and the interface update workflow.
+
+## Generator plugin deprecation
+
+`generator_plugin.wasm` and its `generator-plugin` WIT world are deprecated and
+will be removed in one of the next versions. Replace it with
+`generator_engine.wasm`, which implements the `engine-plugin` world. Adapt the
+host node configuration and startup parameters to its timer/mailbox interface;
+see the [SDK migration guide](https://github.com/ninegamma/wabrix_api/blob/320f8653b82b41e58129b8ac59621a556f09adb4/wit_doc.md#generator-plugin-deprecation-and-migration).
+
+Build the replacement with:
+
+```bash
+cargo build -p generator_engine --release --target wasm32-wasip2 --locked
+```
 
 ## Generator runtime diagnostics
 

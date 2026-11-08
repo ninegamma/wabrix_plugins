@@ -1,4 +1,6 @@
-// Inside your WASM Plugin (Guest)
+//! Deprecated legacy generator plugin, scheduled for removal in an upcoming version.
+//! Replace `generator_plugin.wasm` with `generator_engine.wasm` using the
+//! `engine-plugin` world and its timer/mailbox contract.
 #![no_std]
 extern crate alloc;
 

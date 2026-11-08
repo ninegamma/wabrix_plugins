@@ -511,7 +511,7 @@ checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 [[package]]
 name = "wabrix_api"
 version = "0.7.0"
-source = "git+https://github.com/ninegamma/wabrix_api.git?branch=main#6fd02f39c5eea4e38f027065abf530415c254836"
+source = "git+https://github.com/ninegamma/wabrix_api.git?rev=320f8653b82b41e58129b8ac59621a556f09adb4#320f8653b82b41e58129b8ac59621a556f09adb4"
 dependencies = [
  "anyhow",
  "byteorder",

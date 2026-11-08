@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/ninegamma/wabrix_api.git",
-  "revision": "84ac33b38d54e8820a72229e18fe444bddda7864",
+  "revision": "320f8653b82b41e58129b8ac59621a556f09adb4",
   "path": "wit/wabrix.wit",
-  "sdk_version": "0.6.1",
-  "sha256": "c0b9a6ae029fb366ed64aa7dda05feffebc018d1bf5735f28e817f02115a7dcd"
+  "sdk_version": "0.7.0",
+  "sha256": "10f44e505fc61b21fb3a7e5a16080cbb9e5db5fbbd754b113bf5b2db3c03332c"
 }
